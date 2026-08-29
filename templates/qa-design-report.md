@@ -7,6 +7,10 @@ Use this template selectively. Remove sections that do not add value.
 - Feature / change:
 - Artifacts reviewed:
 - Review depth:
+- Skill version / commit:
+- Host:
+- Activated domain packs:
+- Assumption IDs:
 - Main invariants:
 
 ## Behavior model

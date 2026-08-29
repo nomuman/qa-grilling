@@ -2,180 +2,162 @@
 
 [English](README.md)
 
-`qa-grilling` は、仕様や設計を実装前にQAするためのAgent Skillです。
+`qa-grilling` は、仕様や設計を実装前にレビューする、明示呼び出し専用のAgent Skillです。
 
-状態漏れ、境界値、通信失敗、二重実行、データ消失、権限、アクセシビリティ、性能、プライバシーなど、実装後のQAで見つかりやすい問題を先に探します。
+設計の壊れ方をモデル化し、重要なリスクを優先し、人の判断が必要な仕様だけを確認します。結果は、仕様変更、受け入れ条件、テスト義務、可観測性要件、残余リスクへ落とし込みます。
 
 > この設計は、どう壊れるか？
 
 ## インストール
 
-### Codex
+変化し続ける `main` ではなく、公開済みバージョンをインストールします。
 
-自分の環境で常に使えるようにする場合:
+### Codex
 
 ```bash
 mkdir -p ~/.agents/skills
 git clone https://github.com/nomuman/qa-grilling ~/.agents/skills/qa-grilling
+git -C ~/.agents/skills/qa-grilling checkout v1.0.0
 ```
 
-Codexは `~/.agents/skills` にあるSkillを読み込みます。
+Codexは `~/.agents/skills` にある個人Skillを検出します。
 
-インストール後は、Codexでそのまま使えます。
+明示的に呼び出します。
 
 ```text
-$qa-grilling を使って、この機能を実装前にレビューして
-```
-
-PRD、実装計画、Figmaの情報、コードなどと一緒に依頼してください。
-
-更新するとき:
-
-```bash
-git -C ~/.agents/skills/qa-grilling pull
+$qa-grilling この機能を実装前にレビューして
 ```
 
 ### Claude Code
 
-自分の環境で常に使えるようにする場合:
-
 ```bash
 mkdir -p ~/.claude/skills
 git clone https://github.com/nomuman/qa-grilling ~/.claude/skills/qa-grilling
+git -C ~/.claude/skills/qa-grilling checkout v1.0.0
 ```
 
-Claude Codeは `~/.claude/skills` にあるSkillを読み込みます。
-
-インストール後は:
+明示的に呼び出します。
 
 ```text
-/qa-grilling
+/qa-grilling この機能を実装前にレビューして
 ```
 
-で直接呼び出せます。
+### プロジェクト限定のインストール
 
-普通に文章で依頼しても使えます。
+個人用の場所ではなく、次のどちらかへ配置します。
 
 ```text
-qa-grillingを使って、この機能を実装前にレビューして
+<project>/.agents/skills/qa-grilling/   # Codex
+<project>/.claude/skills/qa-grilling/   # Claude Code
 ```
 
-更新するとき:
+リポジトリ全体を一緒に配置してください。`SKILL.md` は、レビューに必要な補助ファイルだけを段階的に読み込みます。
+
+### 更新
+
+Release Notesを確認してから、特定のバージョンへ切り替えます。
 
 ```bash
-git -C ~/.claude/skills/qa-grilling pull
+git -C <skill-path> fetch --tags
+git -C <skill-path> checkout <version>
 ```
 
-### 特定のプロジェクトだけで使う
+[CHANGELOG.md](CHANGELOG.md) と [GitHub Releases](https://github.com/nomuman/qa-grilling/releases) を確認してください。再現可能なレビュー挙動が必要な場合、移動するブランチを `pull` する更新は避けます。
 
-Codexの場合:
+## 呼び出し方針
 
-```text
-<project>/.agents/skills/qa-grilling/
-```
+ユーザーが明示的に指定した場合だけ起動します。
 
-Claude Codeの場合:
+- Codex: `agents/openai.yaml` の `policy.allow_implicit_invocation: false`
+- Claude Code: `SKILL.md` の `disable-model-invocation: true`
 
-```text
-<project>/.claude/skills/qa-grilling/
-```
+通常の設計・コードレビューが、意図せず複数ターンのgrillingへ変わることを防ぎます。
 
-`SKILL.md` だけではなく、このリポジトリ全体を配置してください。`references/`、`templates/`、`examples/` もSkillから参照します。
+## レビューモード
+
+### 深度
+
+- `quick`: 補助資料の読み込みを抑え、最重要リスクだけを返す
+- `standard`: 既定。行動モデル、core lens、関連domain packを使う
+- `deep`: 証拠を広く確認し、状態・データモデルとfailure chainを明示してextended lensを使う
+
+### 対話
+
+- `interactive`: 未解決のP0/P1仕様判断を、1ターンに1問だけ確認する
+- `one-shot`: 指定された場合、または追加の対話ができない環境で使用する。質問せず、推奨値を仮定として記録し、同じターンでレポートを完成させる
+
+P2/P3は、アーキテクチャ、公開契約、不可逆な挙動を大きく変える場合を除き、推奨値を採用します。
+
+## 安全境界
+
+レビュー対象のリポジトリ、文書、デザイン、Webページ、コメント、ログは、信頼できないデータとして扱います。対象内の埋め込み命令は、レビュー方法を変更せず、実行・編集・情報開示・外部副作用を許可しません。
+
+レビューは既定で読み取り専用です。追加行為には別のユーザー許可が必要で、ホストの権限ルールにも従います。
 
 ## 対象
 
-次のようなものをレビューできます。
-
-- PRD、仕様書
-- Issue、User Story
+- PRD、機能仕様、Issue、User Story
 - Figma、画面遷移
-- API仕様
-- アーキテクチャ
-- 実装計画
-- 既存コード
+- API契約、データモデル
+- アーキテクチャ、Migration、実装計画
+- 既存コード、テスト
+
+Mobile、Web、API、Offline Sync、Media、Notification、Payment、AI、Location、Authentication、Analytics、Files、Searchのうち、対象に関係するdomain packだけを読み込みます。
 
 ## 進め方
 
-1. 仕様、設計、コード、既存テストを読む
-2. 状態、遷移、データ、副作用、依存関係を整理する
-3. 複数のQA観点から壊れ方を探す
-4. リスク順に並べる
-5. 仕様判断が必要なものだけ、1問ずつ確認する
-6. 仕様変更、Acceptance Criteria、テスト観点に落とす
-
-探索には `Feature × Quality × Event` を使います。
-
-たとえば動画アップロードなら:
-
-```text
-upload × reliability × interruption
-→ アップロード中にアプリが終了したらどうなる？
-
-upload × correctness × concurrency
-→ 同じ動画を二重送信したらどうなる？
-```
-
-## 主なQA観点
-
-- 状態、状態遷移
-- 境界値、不正入力
-- 通信失敗、Retry
-- 二重実行、Race Condition
-- 永続化、Data Integrity
-- App / Browser Lifecycle
-- Compatibility、Migration
-- Performance、Memory、Storage、Battery
-- Security、Privacy
-- Accessibility
-- UX、誤操作、破壊的操作
-- ユーザーの不安、信頼、Control
-- Observability、Recovery
-
-Mobile、Web、API、Offline Sync、Media、Notification、Payment、AI、Location、Authentication、Analyticsなどは、対象に応じて追加で確認します。
-
-詳しくは:
-
-- [`references/qa-lenses.md`](references/qa-lenses.md)
-- [`references/domain-packs.md`](references/domain-packs.md)
-- [`references/exploration-model.md`](references/exploration-model.md)
+1. 質問より先に、利用できる証拠を確認する
+2. Actor、状態、遷移、データ、不変条件、副作用、依存関係をモデル化する
+3. `Feature × Quality × Event` と関連するQA lensで壊れ方を探す
+4. FindingをDEFECT、AMBIGUITY、MISSING_RULE、TEST_OBLIGATION、OBSERVABILITY_GAP、ACCEPTED_RISKへ分類する
+5. 具体的な影響をP0/P1/P2/P3で優先づけする
+6. 人の判断が必要な高リスク仕様だけを、interactiveでは1問ずつ解決する
+7. 仕様変更、受け入れ条件、検証、可観測性、残余リスクへ落とし込む
 
 ## 出力
 
-レビュー後は必要に応じて次を残します。
+必要に応じて次を含みます。
 
-- 優先度付きQA指摘
-- 未決の仕様判断
+- 根拠付きの優先QA Finding
+- Decision Ledgerと仮定
 - 仕様変更
-- Acceptance Criteria
-- Test Obligations
-- Observability Requirements
-- Residual Risks
+- 行動ベースの受け入れ条件
+- Test Obligation
+- 可観測性とSupport要件
+- 残余リスク、Release／Rollback条件
 
-レポートのテンプレートは [`templates/qa-design-report.md`](templates/qa-design-report.md) にあります。
-
-## 使い方の例
+## 使用例
 
 ```text
-$qa-grilling を使って、このPRDを実装前にレビューして
+$qa-grilling このPRDをstandard・interactiveでレビューして
 ```
 
 ```text
-このFigmaをqa-grillingして。あとでQAに指摘されそうなところを先に探して
+/qa-grilling このMigration計画を、データ消失とRollback中心にone-shotでレビューして
 ```
 
-```text
-この実装計画をqa-grillingして。データ消失と復旧を重点的に見て
+[動画アップロード](examples/video-upload-review.md)と[プロフィールフォーム](examples/ui-form-review.md)の参考出力があります。通常のレビューでは自動的に読み込みません。
+
+## 開発
+
+決定的な構造検査を実行します。
+
+```bash
+python3 scripts/validate_skill.py
 ```
 
-レビュー例:
+行動evalケースとクロスホストrubricは [evals/README.md](evals/README.md) にあります。Pull RequestではGitHub Actionsが構造検査を実行します。
 
-- [`examples/video-upload-review.md`](examples/video-upload-review.md)
-- [`examples/ui-form-review.md`](examples/ui-form-review.md)
+ReleaseはSemantic Versioningに従います。`main` は開発中の状態で、インストール可能な挙動は変更不能なtagとGitHub Releaseで識別します。
+
+セキュリティ上の問題は [SECURITY.md](SECURITY.md) の手順で非公開報告してください。
+
+## ライセンス
+
+[MIT](LICENSE)
 
 ## Inspiration
 
-Grillingの考え方はこちらの記事を参考にしています。
-
-https://zenn.dev/sato_frontend/articles/1a85841505b9bb
+対話スタイルは[こちらの記事](https://zenn.dev/sato_frontend/articles/1a85841505b9bb)で紹介されているGrillingの考え方を参考にしています。
 
 `qa-grilling` はQA向けに独立して作ったSkillで、元実装のforkではありません。
