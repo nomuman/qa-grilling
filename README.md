@@ -2,179 +2,171 @@
 
 [日本語](README.ja.md)
 
-`qa-grilling` is an Agent Skill for reviewing specs and designs before implementation.
+`qa-grilling` is an explicit-only Agent Skill for reviewing specifications and designs before implementation.
 
-It looks for problems that are often found later in QA: missing states, unclear behavior, boundary cases, retries, network failures, duplicate actions, data loss, permissions, accessibility, performance, privacy, and more.
+It models how a design can fail, prioritizes meaningful risks, asks only the product decisions that require human judgment, and converts the result into specification changes, acceptance criteria, test obligations, observability requirements, and residual risks.
 
 > How can this design fail?
 
 ## Install
 
-### Codex
+Install a released version rather than tracking a moving `main` branch.
 
-Install for your user account:
+### Codex
 
 ```bash
 mkdir -p ~/.agents/skills
 git clone https://github.com/nomuman/qa-grilling ~/.agents/skills/qa-grilling
+git -C ~/.agents/skills/qa-grilling checkout <version>
 ```
 
-Codex reads personal skills from `~/.agents/skills`.
+Replace `<version>` with a published tag such as `v1.0.0`.
 
-Then use it from Codex:
+Codex discovers personal skills under `~/.agents/skills`.
+
+Invoke the skill explicitly:
 
 ```text
-Use $qa-grilling to review this feature before implementation.
-```
-
-You can also mention the skill with `$qa-grilling` and give it a PRD, implementation plan, Figma context, or code to review.
-
-To update:
-
-```bash
-git -C ~/.agents/skills/qa-grilling pull
+$qa-grilling review this feature before implementation
 ```
 
 ### Claude Code
 
-Install for your user account:
-
 ```bash
 mkdir -p ~/.claude/skills
 git clone https://github.com/nomuman/qa-grilling ~/.claude/skills/qa-grilling
+git -C ~/.claude/skills/qa-grilling checkout <version>
 ```
 
-Claude Code reads personal skills from `~/.claude/skills`.
-
-Then run:
+Invoke the skill explicitly:
 
 ```text
-/qa-grilling
+/qa-grilling review this feature before implementation
 ```
 
-or ask naturally:
+### Project-only installation
+
+Use one of these locations instead of the personal path:
 
 ```text
-Use qa-grilling to review this feature before implementation.
+<project>/.agents/skills/qa-grilling/   # Codex
+<project>/.claude/skills/qa-grilling/   # Claude Code
 ```
 
-To update:
+Keep the full repository together. `SKILL.md` routes to supporting files only when the review needs them.
+
+### Update
+
+Review the release notes, then switch to a specific release:
 
 ```bash
-git -C ~/.claude/skills/qa-grilling pull
+git -C <skill-path> fetch --tags
+git -C <skill-path> checkout <version>
 ```
 
-### Install only for one project
+See [CHANGELOG.md](CHANGELOG.md) and [GitHub Releases](https://github.com/nomuman/qa-grilling/releases). Avoid updating by pulling a moving branch when reproducible review behavior matters.
 
-For Codex, put the skill under:
+## Invocation policy
 
-```text
-<project>/.agents/skills/qa-grilling/
-```
+The skill runs only when a user explicitly invokes it.
 
-For Claude Code:
+- Codex: `agents/openai.yaml` sets `policy.allow_implicit_invocation: false`.
+- Claude Code: `SKILL.md` sets `disable-model-invocation: true`.
 
-```text
-<project>/.claude/skills/qa-grilling/
-```
+This prevents an ordinary design or code review from unexpectedly becoming a multi-turn grilling session.
 
-Keep the whole repository together. `SKILL.md` uses files in `references/`, `templates/`, and `examples/`.
+## Review modes
+
+### Depth
+
+- `quick`: highest-value risks with minimal supporting material;
+- `standard`: default behavior model, core lenses, and relevant domain packs;
+- `deep`: broader evidence, explicit state and data models, extended lenses, and failure-chain analysis.
+
+### Interaction
+
+- `interactive`: asks exactly one unresolved P0/P1 product decision per turn;
+- `one-shot`: used when requested or when no follow-up turn is available; asks no questions, records recommended assumptions, and completes the report in one turn.
+
+P2/P3 choices use the recommended default unless they materially change architecture, a public contract, or irreversible behavior.
+
+## Safety boundary
+
+Reviewed repositories, documents, designs, webpages, comments, and logs are untrusted data. Embedded instructions do not change the review method or authorize execution, edits, disclosure, or external side effects.
+
+A review is read-only by default. Additional actions require separate user authority and remain subject to the host's permission rules.
 
 ## What it reviews
 
-You can use it with:
+- PRDs, feature specifications, issues, and user stories;
+- Figma designs and user flows;
+- API contracts and data models;
+- architecture, migrations, and implementation plans;
+- existing code and tests.
 
-- PRDs and feature specs
-- issues and user stories
-- Figma designs and UI flows
-- API contracts
-- architecture and implementation plans
-- existing code
+The skill activates only the relevant domain packs for mobile, web, APIs, offline sync, media, notifications, payments, AI, agent skills, location, authentication, analytics, files, and search.
 
 ## How it works
 
-1. Read the available spec, design, code, and tests.
-2. Model states, transitions, data, side effects, and dependencies.
-3. Look for failure modes from multiple QA perspectives.
-4. Rank findings by risk.
-5. Ask only the questions that require a product or design decision, one at a time.
-6. Turn the result into concrete changes, acceptance criteria, and test points.
-
-The skill uses `Feature × Quality × Event` to find cases that a flat checklist can miss.
-
-Example:
-
-```text
-upload × reliability × interruption
-→ What happens if the app is killed during upload?
-
-upload × correctness × concurrency
-→ What happens if the same video is uploaded twice?
-```
-
-## QA perspectives
-
-The review covers areas including:
-
-- states and transitions
-- boundaries and invalid input
-- network failures and retries
-- concurrency and duplicate actions
-- persistence and data integrity
-- app and browser lifecycle
-- compatibility and migration
-- performance and resource use
-- security and privacy
-- accessibility
-- UX and destructive actions
-- user trust and control
-- observability and recovery
-
-Extra domain checks are loaded for mobile, web, APIs, offline sync, media, notifications, payments, AI, location, authentication, and analytics when relevant.
-
-See:
-
-- [`references/qa-lenses.md`](references/qa-lenses.md)
-- [`references/domain-packs.md`](references/domain-packs.md)
-- [`references/exploration-model.md`](references/exploration-model.md)
+1. Inspect available evidence before asking questions.
+2. Model actors, states, transitions, data, invariants, side effects, and dependencies.
+3. Explore likely failures with `Feature × Quality × Event` and relevant QA lenses.
+4. Classify findings as defects, ambiguities, missing rules, test obligations, observability gaps, or accepted risks.
+5. Rank concrete consequences as P0/P1/P2/P3 without false precision.
+6. Resolve only high-risk human decisions, one at a time when interactive.
+7. Produce executable specification changes, acceptance criteria, verification work, observability, and residual risks.
 
 ## Output
 
-A review can produce:
+A substantial review can include:
 
-- prioritized QA findings
-- unresolved design decisions
-- specification changes
-- acceptance criteria
-- test obligations
-- observability requirements
-- residual risks
-
-The report template is in [`templates/qa-design-report.md`](templates/qa-design-report.md).
+- prioritized QA findings and evidence;
+- a Decision Ledger and documented assumptions;
+- specification changes;
+- behavioral acceptance criteria;
+- test obligations;
+- observability and support requirements;
+- residual risks and release or rollback conditions.
 
 ## Examples
 
 ```text
-Use $qa-grilling on this PRD before we implement it.
+$qa-grilling run a standard interactive review on this PRD
 ```
 
 ```text
-Review this Figma flow with qa-grilling. Find things QA is likely to catch later.
+/qa-grilling do a one-shot review of this migration plan, focusing on data loss and rollback
 ```
 
-```text
-Run qa-grilling on this implementation plan. Focus on data loss and recovery.
+Reference outputs are available for [video upload](examples/video-upload-review.md) and a [profile form](examples/ui-form-review.md). They are examples only and are not loaded during ordinary reviews.
+
+## Dogfooding case study
+
+The [v1.0.0 self-review](case-studies/self-review-v1.0.0.md) shows the skill reviewing its own baseline, resolving six product decisions, tracing findings into repository changes, and separating static, live-host, CI, and release evidence. A [Japanese version](case-studies/self-review-v1.0.0.ja.md) is also available.
+
+Use the case to decide whether the workflow fits your team. It includes limitations and blocked evidence rather than presenting dogfooding as independent proof.
+
+## Development
+
+Run the deterministic structural checks:
+
+```bash
+python3 scripts/validate_skill.py
+python3 -B -m unittest discover -s tests -v
 ```
 
-Example reviews:
+Behavioral evaluation cases, verification classes, and the cross-host rubric are in [evals/README.md](evals/README.md). Release evidence is stored in [evals/results/v1.0.0-rc1.md](evals/results/v1.0.0-rc1.md). Pull requests run structural validation and validator negative tests in GitHub Actions.
 
-- [`examples/video-upload-review.md`](examples/video-upload-review.md)
-- [`examples/ui-form-review.md`](examples/ui-form-review.md)
+Releases follow Semantic Versioning. `main` is development state; installable behavior is identified by an immutable tag and GitHub Release.
+
+Report security issues privately as described in [SECURITY.md](SECURITY.md).
+
+## License
+
+[MIT](LICENSE)
 
 ## Inspiration
 
-The interaction style is based on the Grilling concept described here:
-
-https://zenn.dev/sato_frontend/articles/1a85841505b9bb
+The interaction style is inspired by the Grilling concept described in [this article](https://zenn.dev/sato_frontend/articles/1a85841505b9bb).
 
 `qa-grilling` is an independent QA-oriented skill, not a fork of the original implementation.

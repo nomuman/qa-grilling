@@ -2,6 +2,8 @@
 
 The grilling loop exists to resolve design decisions, not to interview the user for context the agent could discover itself.
 
+Use it only in interactive mode. In one-shot or non-interactive work, apply the recommended default, record it as an assumption, and complete the report without asking a question.
+
 ## Before asking
 
 For each candidate question:
@@ -111,6 +113,8 @@ Ask in this order:
 3. decisions that unlock several downstream branches;
 4. P2 only when they materially affect design or acceptance criteria;
 5. avoid grilling P3 polish unless explicitly requested.
+
+By default, ask only unresolved P0/P1 decisions. Ask a P2 decision only when it materially changes architecture, a public contract, or irreversible behavior. Otherwise apply the recommended default and record it as an assumption.
 
 ## User says “use your judgment”
 

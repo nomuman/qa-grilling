@@ -7,7 +7,19 @@ Use this template selectively. Remove sections that do not add value.
 - Feature / change:
 - Artifacts reviewed:
 - Review depth:
+- Skill version / commit:
+- Host:
+- Activated domain packs:
+- Assumption IDs:
 - Main invariants:
+
+## Evidence coverage
+
+| Artifact / environment | Scope | Evidence strength | Verification class | Gap / blocker |
+|---|---|---|---|---|
+|  | reviewed / out of scope / unavailable | confirmed / supported / hypothesis | static/local / live-host/device/E2E / CI / release/production / blocked |  |
+
+Never upgrade one verification class into another. State what was not inspected.
 
 ## Behavior model
 
@@ -40,6 +52,8 @@ Keep this table short. Put detail below only for findings that need it.
 - Current evidence:
 - Recommended change:
 - Verification:
+- Evidence strength:
+- Verification class:
 
 ## Decision ledger
 
@@ -86,6 +100,14 @@ Group by risk and behavior.
 - 
 
 Avoid enumerating a combinatorial matrix unless the combinations truly carry distinct risk.
+
+## Traceability
+
+Use this for substantial reviews where implementation or release evidence must be auditable.
+
+| Finding ID | Decision / assumption | Spec change / acceptance criteria | Test obligation | Evidence / status |
+|---|---|---|---|---|
+| F-001 | D-001 / A-001 | AC-001 | T-001 | static/local / live-host/device/E2E / CI / release/production / blocked |
 
 ## Observability requirements
 
