@@ -6,9 +6,81 @@
 
 状態漏れ、境界値、通信失敗、二重実行、データ消失、権限、アクセシビリティ、性能、プライバシーなど、実装後のQAで見つかりやすい問題を先に探します。
 
-Grillingの考え方をベースにしていますが、見るポイントはシンプルです。
-
 > この設計は、どう壊れるか？
+
+## インストール
+
+### Codex
+
+自分の環境で常に使えるようにする場合:
+
+```bash
+mkdir -p ~/.agents/skills
+git clone https://github.com/nomuman/qa-grilling ~/.agents/skills/qa-grilling
+```
+
+Codexは `~/.agents/skills` にあるSkillを読み込みます。
+
+インストール後は、Codexでそのまま使えます。
+
+```text
+$qa-grilling を使って、この機能を実装前にレビューして
+```
+
+PRD、実装計画、Figmaの情報、コードなどと一緒に依頼してください。
+
+更新するとき:
+
+```bash
+git -C ~/.agents/skills/qa-grilling pull
+```
+
+### Claude Code
+
+自分の環境で常に使えるようにする場合:
+
+```bash
+mkdir -p ~/.claude/skills
+git clone https://github.com/nomuman/qa-grilling ~/.claude/skills/qa-grilling
+```
+
+Claude Codeは `~/.claude/skills` にあるSkillを読み込みます。
+
+インストール後は:
+
+```text
+/qa-grilling
+```
+
+で直接呼び出せます。
+
+普通に文章で依頼しても使えます。
+
+```text
+qa-grillingを使って、この機能を実装前にレビューして
+```
+
+更新するとき:
+
+```bash
+git -C ~/.claude/skills/qa-grilling pull
+```
+
+### 特定のプロジェクトだけで使う
+
+Codexの場合:
+
+```text
+<project>/.agents/skills/qa-grilling/
+```
+
+Claude Codeの場合:
+
+```text
+<project>/.claude/skills/qa-grilling/
+```
+
+`SKILL.md` だけではなく、このリポジトリ全体を配置してください。`references/`、`templates/`、`examples/` もSkillから参照します。
 
 ## 対象
 
@@ -43,31 +115,25 @@ upload × correctness × concurrency
 → 同じ動画を二重送信したらどうなる？
 ```
 
-チェックリストを上から消化するのではなく、対象の機能に合わせて壊れ方を探します。
+## 主なQA観点
 
-## QA観点
-
-主に次を確認します。
-
-- 状態遷移
+- 状態、状態遷移
 - 境界値、不正入力
-- Retry、Cancel、Recovery
-- Network、Timeout
-- 二重実行、Concurrency、Idempotency
+- 通信失敗、Retry
+- 二重実行、Race Condition
 - 永続化、Data Integrity
 - App / Browser Lifecycle
 - Compatibility、Migration
 - Performance、Memory、Storage、Battery
 - Security、Privacy
-- Accessibility、Localization
-- UX、破壊的操作、誤操作
-- ユーザーの信頼、安心感、コントロール感
-- Observability、Supportability
-- Rollout、Rollback
+- Accessibility
+- UX、誤操作、破壊的操作
+- ユーザーの不安、信頼、Control
+- Observability、Recovery
 
-対象に応じて、Mobile、Web、API、Offline Sync、Media、Notification、Payment、AI、Location、Authentication、Analytics向けの観点も追加します。
+Mobile、Web、API、Offline Sync、Media、Notification、Payment、AI、Location、Authentication、Analyticsなどは、対象に応じて追加で確認します。
 
-詳しくはこちらです。
+詳しくは:
 
 - [`references/qa-lenses.md`](references/qa-lenses.md)
 - [`references/domain-packs.md`](references/domain-packs.md)
@@ -75,48 +141,36 @@ upload × correctness × concurrency
 
 ## 出力
 
-レビュー結果として、必要に応じて次を残します。
+レビュー後は必要に応じて次を残します。
 
-- 優先度付きの指摘
-- 未決事項
+- 優先度付きQA指摘
+- 未決の仕様判断
 - 仕様変更
 - Acceptance Criteria
-- テスト観点
+- Test Obligations
 - Observability Requirements
-- 残るリスク
+- Residual Risks
 
-テンプレート: [`templates/qa-design-report.md`](templates/qa-design-report.md)
+レポートのテンプレートは [`templates/qa-design-report.md`](templates/qa-design-report.md) にあります。
 
-## 使い方
-
-Agent Skillsに対応したコーディングエージェントのSkillディレクトリに、このリポジトリをコピーまたはcloneします。
-
-あとは普通に依頼します。
+## 使い方の例
 
 ```text
-この機能を実装前にqa-grillingして。
+$qa-grilling を使って、このPRDを実装前にレビューして
 ```
 
 ```text
-このPRDをqa-grillingでレビューして。あとでQAに指摘されそうなところを先に見つけて。
+このFigmaをqa-grillingして。あとでQAに指摘されそうなところを先に探して
 ```
 
 ```text
-このFigmaとAPI設計を実装前にレビューして。
+この実装計画をqa-grillingして。データ消失と復旧を重点的に見て
 ```
 
-## Example
+レビュー例:
 
 - [`examples/video-upload-review.md`](examples/video-upload-review.md)
 - [`examples/ui-form-review.md`](examples/ui-form-review.md)
-
-## Grilling
-
-仕様、設計、コード、既存テストを読めば分かることは質問しません。
-
-それでも決まっていないことだけ、1問ずつ確認します。回答は記録してから次に進みます。
-
-詳しくは [`references/grilling-protocol.md`](references/grilling-protocol.md) を参照してください。
 
 ## Inspiration
 
