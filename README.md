@@ -6,9 +6,79 @@
 
 It looks for problems that are often found later in QA: missing states, unclear behavior, boundary cases, retries, network failures, duplicate actions, data loss, permissions, accessibility, performance, privacy, and more.
 
-It is based on the idea of Grilling, but focuses on one question:
-
 > How can this design fail?
+
+## Install
+
+### Codex
+
+Install for your user account:
+
+```bash
+mkdir -p ~/.agents/skills
+git clone https://github.com/nomuman/qa-grilling ~/.agents/skills/qa-grilling
+```
+
+Codex reads personal skills from `~/.agents/skills`.
+
+Then use it from Codex:
+
+```text
+Use $qa-grilling to review this feature before implementation.
+```
+
+You can also mention the skill with `$qa-grilling` and give it a PRD, implementation plan, Figma context, or code to review.
+
+To update:
+
+```bash
+git -C ~/.agents/skills/qa-grilling pull
+```
+
+### Claude Code
+
+Install for your user account:
+
+```bash
+mkdir -p ~/.claude/skills
+git clone https://github.com/nomuman/qa-grilling ~/.claude/skills/qa-grilling
+```
+
+Claude Code reads personal skills from `~/.claude/skills`.
+
+Then run:
+
+```text
+/qa-grilling
+```
+
+or ask naturally:
+
+```text
+Use qa-grilling to review this feature before implementation.
+```
+
+To update:
+
+```bash
+git -C ~/.claude/skills/qa-grilling pull
+```
+
+### Install only for one project
+
+For Codex, put the skill under:
+
+```text
+<project>/.agents/skills/qa-grilling/
+```
+
+For Claude Code:
+
+```text
+<project>/.claude/skills/qa-grilling/
+```
+
+Keep the whole repository together. `SKILL.md` uses files in `references/`, `templates/`, and `examples/`.
 
 ## What it reviews
 
@@ -39,30 +109,28 @@ upload × reliability × interruption
 → What happens if the app is killed during upload?
 
 upload × correctness × concurrency
-→ What prevents the same file from being uploaded twice?
+→ What happens if the same video is uploaded twice?
 ```
 
-## QA areas
+## QA perspectives
 
-The core review includes:
+The review covers areas including:
 
-- state transitions
+- states and transitions
 - boundaries and invalid input
-- retry, cancel, and recovery
-- network failures and timeouts
-- concurrency and idempotency
+- network failures and retries
+- concurrency and duplicate actions
 - persistence and data integrity
 - app and browser lifecycle
 - compatibility and migration
-- performance and resource usage
+- performance and resource use
 - security and privacy
-- accessibility and localization
+- accessibility
 - UX and destructive actions
 - user trust and control
-- observability and supportability
-- rollout and rollback
+- observability and recovery
 
-Extra domain checks are included for mobile, web, API, offline sync, media, notifications, payments, AI, location, authentication, and analytics.
+Extra domain checks are loaded for mobile, web, APIs, offline sync, media, notifications, payments, AI, location, authentication, and analytics when relevant.
 
 See:
 
@@ -74,50 +142,38 @@ See:
 
 A review can produce:
 
-- prioritized findings
-- unresolved decisions
-- spec changes
+- prioritized QA findings
+- unresolved design decisions
+- specification changes
 - acceptance criteria
 - test obligations
 - observability requirements
 - residual risks
 
-Template: [`templates/qa-design-report.md`](templates/qa-design-report.md)
-
-## Usage
-
-Copy or clone this repository into the skills directory used by your Agent Skills-compatible coding agent.
-
-Then ask, for example:
-
-```text
-Run qa-grilling on this feature before implementation.
-```
-
-```text
-Review this PRD with qa-grilling and find issues QA is likely to catch later.
-```
-
-```text
-Review this Figma and API design before we start coding.
-```
+The report template is in [`templates/qa-design-report.md`](templates/qa-design-report.md).
 
 ## Examples
+
+```text
+Use $qa-grilling on this PRD before we implement it.
+```
+
+```text
+Review this Figma flow with qa-grilling. Find things QA is likely to catch later.
+```
+
+```text
+Run qa-grilling on this implementation plan. Focus on data loss and recovery.
+```
+
+Example reviews:
 
 - [`examples/video-upload-review.md`](examples/video-upload-review.md)
 - [`examples/ui-form-review.md`](examples/ui-form-review.md)
 
-## Grilling
-
-If the answer already exists in the spec, design, code, or tests, the skill should not ask the user.
-
-If a decision is still missing, it asks one question at a time and records the answer before moving on.
-
-See [`references/grilling-protocol.md`](references/grilling-protocol.md).
-
 ## Inspiration
 
-The interaction style was inspired by the Grilling concept described here:
+The interaction style is based on the Grilling concept described here:
 
 https://zenn.dev/sato_frontend/articles/1a85841505b9bb
 
