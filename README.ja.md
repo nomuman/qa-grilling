@@ -17,8 +17,10 @@
 ```bash
 mkdir -p ~/.agents/skills
 git clone https://github.com/nomuman/qa-grilling ~/.agents/skills/qa-grilling
-git -C ~/.agents/skills/qa-grilling checkout v1.0.0
+git -C ~/.agents/skills/qa-grilling checkout <version>
 ```
+
+`<version>` は、`v1.0.0` など公開済みtagへ置き換えてください。
 
 Codexは `~/.agents/skills` にある個人Skillを検出します。
 
@@ -33,7 +35,7 @@ $qa-grilling この機能を実装前にレビューして
 ```bash
 mkdir -p ~/.claude/skills
 git clone https://github.com/nomuman/qa-grilling ~/.claude/skills/qa-grilling
-git -C ~/.claude/skills/qa-grilling checkout v1.0.0
+git -C ~/.claude/skills/qa-grilling checkout <version>
 ```
 
 明示的に呼び出します。
@@ -102,7 +104,7 @@ P2/P3は、アーキテクチャ、公開契約、不可逆な挙動を大きく
 - アーキテクチャ、Migration、実装計画
 - 既存コード、テスト
 
-Mobile、Web、API、Offline Sync、Media、Notification、Payment、AI、Location、Authentication、Analytics、Files、Searchのうち、対象に関係するdomain packだけを読み込みます。
+Mobile、Web、API、Offline Sync、Media、Notification、Payment、AI、Agent Skill、Location、Authentication、Analytics、Files、Searchのうち、対象に関係するdomain packだけを読み込みます。
 
 ## 進め方
 
@@ -138,15 +140,22 @@ $qa-grilling このPRDをstandard・interactiveでレビューして
 
 [動画アップロード](examples/video-upload-review.md)と[プロフィールフォーム](examples/ui-form-review.md)の参考出力があります。通常のレビューでは自動的に読み込みません。
 
+## Dogfooding case study
+
+[`v1.0.0` self-review](case-studies/self-review-v1.0.0.ja.md)では、Skill自身の適用前状態をreviewし、6件のproduct decisionを解決し、Findingからrepository変更まで追跡しています。静的、live-host、CI、release evidenceも分けて記録しています。[English version](case-studies/self-review-v1.0.0.md)もあります。
+
+Teamへの採用判断に利用できるよう、成功例だけでなく限界とblocked evidenceも残しています。
+
 ## 開発
 
 決定的な構造検査を実行します。
 
 ```bash
 python3 scripts/validate_skill.py
+python3 -B -m unittest discover -s tests -v
 ```
 
-行動evalケースとクロスホストrubricは [evals/README.md](evals/README.md) にあります。Pull RequestではGitHub Actionsが構造検査を実行します。
+行動evalケース、verification class、cross-host rubricは [evals/README.md](evals/README.md) にあります。Release evidenceは [evals/results/v1.0.0-rc1.md](evals/results/v1.0.0-rc1.md) に保存します。Pull RequestではGitHub Actionsが構造検査とvalidator negative testsを実行します。
 
 ReleaseはSemantic Versioningに従います。`main` は開発中の状態で、インストール可能な挙動は変更不能なtagとGitHub Releaseで識別します。
 

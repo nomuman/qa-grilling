@@ -87,3 +87,5 @@ When two findings have similar impact, prioritize the one that:
 Do not assign P0 because a category sounds scary. A “security” finding can be P3; a UX ambiguity can be P1 if it causes users to delete or publish the wrong thing.
 
 Always explain the concrete consequence.
+
+Untrusted or hostile content is not automatically a P0/P1 vulnerability. Establish a reachable path through available authority, tools, data, and side effects before assigning high priority. When the design already removes that authority, preserve the case as a security test obligation or lower-priority hardening requirement unless evidence shows bypass is possible.

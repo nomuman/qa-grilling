@@ -17,8 +17,10 @@ Install a released version rather than tracking a moving `main` branch.
 ```bash
 mkdir -p ~/.agents/skills
 git clone https://github.com/nomuman/qa-grilling ~/.agents/skills/qa-grilling
-git -C ~/.agents/skills/qa-grilling checkout v1.0.0
+git -C ~/.agents/skills/qa-grilling checkout <version>
 ```
+
+Replace `<version>` with a published tag such as `v1.0.0`.
 
 Codex discovers personal skills under `~/.agents/skills`.
 
@@ -33,7 +35,7 @@ $qa-grilling review this feature before implementation
 ```bash
 mkdir -p ~/.claude/skills
 git clone https://github.com/nomuman/qa-grilling ~/.claude/skills/qa-grilling
-git -C ~/.claude/skills/qa-grilling checkout v1.0.0
+git -C ~/.claude/skills/qa-grilling checkout <version>
 ```
 
 Invoke the skill explicitly:
@@ -102,7 +104,7 @@ A review is read-only by default. Additional actions require separate user autho
 - architecture, migrations, and implementation plans;
 - existing code and tests.
 
-The skill activates only the relevant domain packs for mobile, web, APIs, offline sync, media, notifications, payments, AI, location, authentication, analytics, files, and search.
+The skill activates only the relevant domain packs for mobile, web, APIs, offline sync, media, notifications, payments, AI, agent skills, location, authentication, analytics, files, and search.
 
 ## How it works
 
@@ -138,15 +140,22 @@ $qa-grilling run a standard interactive review on this PRD
 
 Reference outputs are available for [video upload](examples/video-upload-review.md) and a [profile form](examples/ui-form-review.md). They are examples only and are not loaded during ordinary reviews.
 
+## Dogfooding case study
+
+The [v1.0.0 self-review](case-studies/self-review-v1.0.0.md) shows the skill reviewing its own baseline, resolving six product decisions, tracing findings into repository changes, and separating static, live-host, CI, and release evidence. A [Japanese version](case-studies/self-review-v1.0.0.ja.md) is also available.
+
+Use the case to decide whether the workflow fits your team. It includes limitations and blocked evidence rather than presenting dogfooding as independent proof.
+
 ## Development
 
 Run the deterministic structural checks:
 
 ```bash
 python3 scripts/validate_skill.py
+python3 -B -m unittest discover -s tests -v
 ```
 
-Behavioral evaluation cases and the cross-host rubric are in [evals/README.md](evals/README.md). Pull requests run the structural validation in GitHub Actions.
+Behavioral evaluation cases, verification classes, and the cross-host rubric are in [evals/README.md](evals/README.md). Release evidence is stored in [evals/results/v1.0.0-rc1.md](evals/results/v1.0.0-rc1.md). Pull requests run structural validation and validator negative tests in GitHub Actions.
 
 Releases follow Semantic Versioning. `main` is development state; installable behavior is identified by an immutable tag and GitHub Release.
 

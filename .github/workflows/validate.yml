@@ -29,3 +29,6 @@ jobs:
 
       - name: Validate skill
         run: python3 scripts/validate_skill.py
+
+      - name: Test validator failure cases
+        run: python3 -B -m unittest discover -s tests -v

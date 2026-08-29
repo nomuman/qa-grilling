@@ -85,7 +85,7 @@ def validate_links(errors: list[str]) -> set[Path]:
 
 
 def validate_resource_routing(errors: list[str], linked: set[Path]) -> None:
-    resource_roots = ("references", "templates", "examples", "evals")
+    resource_roots = ("references", "templates", "examples", "evals", "case-studies")
     for directory in resource_roots:
         for resource in (ROOT / directory).rglob("*.md"):
             if resource.resolve() not in linked:
@@ -96,6 +96,8 @@ def validate_resource_routing(errors: list[str], linked: set[Path]) -> None:
         fail(errors, "SKILL.md still links the removed monolithic domain pack")
     if "Do not load unrelated domain packs." not in skill:
         fail(errors, "SKILL.md must prohibit loading unrelated domain packs")
+    if "references/domains/agent-skills.md" not in skill:
+        fail(errors, "SKILL.md must route agent-skill reviews to their domain pack")
 
 
 def validate_docs(errors: list[str]) -> None:
@@ -109,6 +111,9 @@ def validate_docs(errors: list[str]) -> None:
         "CHANGELOG.md",
         "SECURITY.md",
         "scripts/validate_skill.py",
+        "case-studies/self-review-v1.0.0.md",
+        "case-studies/self-review-v1.0.0.ja.md",
+        "evals/results/v1.0.0-rc1.md",
     )
     for value in shared_requirements:
         if value not in english:
@@ -127,8 +132,8 @@ def validate_docs(errors: list[str]) -> None:
 def validate_evals(errors: list[str]) -> None:
     evals = read("evals/README.md")
     ids = sorted(set(re.findall(r"\bE-\d{3}\b", evals)))
-    if len(ids) < 10:
-        fail(errors, f"behavior evaluation suite has {len(ids)} cases; at least 10 are required")
+    if len(ids) < 22:
+        fail(errors, f"behavior evaluation suite has {len(ids)} cases; at least 22 are required")
 
     required = (
         "prompt injection",
@@ -137,10 +142,53 @@ def validate_evals(errors: list[str]) -> None:
         "test obligation",
         "cross-host",
         "must-pass",
+        "verification classes",
+        "invented evidence",
+        "unrelated personal memory",
     )
     for phrase in required:
         if phrase.lower() not in evals.lower():
             fail(errors, f"behavior evaluation rubric is missing: {phrase}")
+
+
+def validate_case_studies(errors: list[str]) -> None:
+    forbidden = (
+        "/Users/",
+        "brain-vault",
+        "gho_",
+        "Token:",
+    )
+    for relative in ("case-studies/self-review-v1.0.0.md", "case-studies/self-review-v1.0.0.ja.md"):
+        text = read(relative)
+        for value in forbidden:
+            if value in text:
+                fail(errors, f"public case study contains private or local-only text: {relative} -> {value}")
+
+    required = (
+        "Finding",
+        "Decision",
+        "Acceptance",
+        "verification",
+        "v1.0.0",
+    )
+    for value in required:
+        if value.lower() not in read("case-studies/self-review-v1.0.0.md").lower():
+            fail(errors, f"English case study is missing adoption evidence: {value}")
+        if value.lower() not in read("case-studies/self-review-v1.0.0.ja.md").lower():
+            fail(errors, f"Japanese case study is missing adoption evidence: {value}")
+
+
+def validate_traceability(errors: list[str]) -> None:
+    template = read("templates/qa-design-report.md")
+    required = (
+        "## Evidence coverage",
+        "Verification class",
+        "## Traceability",
+        "Finding ID",
+    )
+    for value in required:
+        if value not in template:
+            fail(errors, f"QA report template is missing traceability or evidence metadata: {value}")
 
 
 def validate_workflow(errors: list[str]) -> None:
@@ -178,6 +226,8 @@ def main() -> int:
     validate_resource_routing(errors, linked)
     validate_docs(errors)
     validate_evals(errors)
+    validate_case_studies(errors)
+    validate_traceability(errors)
     validate_workflow(errors)
     validate_placeholders(errors)
 
