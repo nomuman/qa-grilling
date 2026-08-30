@@ -146,6 +146,8 @@ The [v1.0.0 self-review](case-studies/self-review-v1.0.0.md) shows the skill rev
 
 Use the case to decide whether the workflow fits your team. It includes limitations and blocked evidence rather than presenting dogfooding as independent proof.
 
+The [mobile media workflow review](case-studies/mobile-media-workflow-qa-2026-08.md) records how the workflow hardened capture, external-media import, upload, cache, and data reads, while keeping recovery, ownership, idempotency, device, CI, and release evidence distinct. A [Japanese version](case-studies/mobile-media-workflow-qa-2026-08.ja.md) is also available.
+
 ## Development
 
 Run the deterministic structural checks:
