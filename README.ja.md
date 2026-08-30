@@ -146,6 +146,8 @@ $qa-grilling このPRDをstandard・interactiveでレビューして
 
 Teamへの採用判断に利用できるよう、成功例だけでなく限界とblocked evidenceも残しています。
 
+[モバイルメディア処理のレビュー](case-studies/mobile-media-workflow-qa-2026-08.ja.md)では、撮影・外部メディア取り込み・アップロード・キャッシュ・データ取得を対象に、失敗時の復旧、所有者分離、冪等性、実機／CI／Release evidenceの境界を記録しています。[English version](case-studies/mobile-media-workflow-qa-2026-08.md)もあります。
+
 ## 開発
 
 決定的な構造検査を実行します。
